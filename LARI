@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Menuju 20:00 — Log Latihan 12 Minggu</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --track:#1c1b19; --track2:#242220; --chalk:#f2ede3; --chalk-dim:#c9c2b3;
+  --fire:#c1440e; --fire-dim:#8a3009; --go:#3a6351; --warn:#c98a2c; --line:#3a3733;
+  --font-num:'Oswald',sans-serif; --font-body:'IBM Plex Sans',sans-serif;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;background:var(--track);color:var(--chalk);font-family:var(--font-body);}
+body{padding:0 0 3rem;}
+header{padding:2rem 1.2rem 1rem;max-width:900px;margin:0 auto;}
+.eyebrow{font-family:var(--font-num);color:var(--fire);font-size:.95rem;letter-spacing:.02em;}
+h1{font-family:var(--font-num);font-weight:700;font-size:clamp(1.8rem,5vw,2.6rem);margin:.2rem 0 .3rem;line-height:1.05;}
+.sub{color:var(--chalk-dim);max-width:60ch;line-height:1.5;font-size:.95rem;}
+.wrap{max-width:900px;margin:0 auto;padding:0 1.2rem;}
+.summary{display:flex;gap:1.4rem;flex-wrap:wrap;background:var(--track2);border:1px solid var(--line);border-radius:6px;padding:1rem 1.2rem;margin:1.2rem 0;}
+.stat .n{font-family:var(--font-num);font-size:1.9rem;color:var(--fire);line-height:1;}
+.stat .l{font-size:.78rem;color:var(--chalk-dim);text-transform:uppercase;letter-spacing:.04em;margin-top:.2rem;}
+.weekbar{display:flex;overflow-x:auto;gap:.35rem;padding:.3rem 0 1rem;scrollbar-width:thin;}
+.wbtn{flex:0 0 auto;font-family:var(--font-num);background:var(--track2);border:1px solid var(--line);color:var(--chalk-dim);
+  padding:.5rem .75rem;border-radius:4px;cursor:pointer;font-size:.95rem;position:relative;}
+.wbtn.active{background:var(--fire);color:var(--chalk);border-color:var(--fire);}
+.wbtn .dot{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--go);}
+.phaselabel{font-size:.8rem;color:var(--warn);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;}
+.day{border:1px solid var(--line);border-radius:6px;margin-bottom:.7rem;overflow:hidden;background:var(--track2);}
+.day-head{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;cursor:pointer;}
+.day-head .name{font-family:var(--font-num);font-size:1.05rem;}
+.day-head .type{font-size:.78rem;color:var(--fire);text-transform:uppercase;letter-spacing:.04em;}
+.day-head .check{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex:0 0 auto;}
+.day-head .check.done{background:var(--go);border-color:var(--go);}
+.day-body{padding:0 1rem 1rem;border-top:1px solid var(--line);display:none;}
+.day.open .day-body{display:block;}
+.plan{color:var(--chalk-dim);font-size:.92rem;line-height:1.5;padding:.8rem 0 .6rem;}
+.rest .plan{font-style:italic;}
+.log-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.6rem;margin-bottom:.6rem;}
+label{display:block;font-size:.72rem;color:var(--chalk-dim);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.25rem;}
+input[type=text],input[type=number],textarea{width:100%;background:var(--track);border:1px solid var(--line);color:var(--chalk);
+  border-radius:4px;padding:.5rem .6rem;font-family:var(--font-body);font-size:.9rem;}
+textarea{resize:vertical;min-height:2.4rem;}
+.itb-row{display:flex;align-items:center;gap:.5rem;margin:.5rem 0;}
+.itb-row input{width:auto;}
+.itb-row.flag label{color:var(--warn);}
+.evalbtn{margin-top:.3rem;background:transparent;border:1px solid var(--fire);color:var(--fire);
+  font-family:var(--font-num);padding:.5rem .9rem;border-radius:4px;cursor:pointer;font-size:.85rem;}
+.evalbtn:disabled{opacity:.5;cursor:default;}
+.evalbox{margin-top:.7rem;background:var(--track);border-left:3px solid var(--fire);border-radius:0 4px 4px 0;
+  padding:.7rem .9rem;font-size:.88rem;line-height:1.55;white-space:pre-wrap;color:var(--chalk);}
+.evalbox:empty{display:none;}
+.notice{background:rgba(201,138,44,.12);border:1px solid var(--warn);color:var(--chalk);border-radius:6px;padding:.8rem 1rem;font-size:.88rem;line-height:1.5;margin:1rem 0;}
+.evalmeta{font-size:.72rem;color:var(--chalk-dim);text-transform:uppercase;letter-spacing:.03em;margin-top:.5rem;}
+.hrtable{width:100%;border-collapse:collapse;margin-top:.4rem;font-size:.85rem;}
+.hrtable th,.hrtable td{border-bottom:1px solid var(--line);padding:.4rem .3rem;text-align:left;}
+.hrtable th{color:var(--chalk-dim);font-weight:500;font-size:.75rem;text-transform:uppercase;}
+details{background:var(--track2);border:1px solid var(--line);border-radius:6px;margin:1.2rem 0;padding:.9rem 1.1rem;}
+summary{font-family:var(--font-num);cursor:pointer;font-size:1.05rem;}
+footer{text-align:center;color:var(--chalk-dim);font-size:.78rem;padding:1.5rem 1rem 0;}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--track:#f2ede3;--track2:#e6ded0;--chalk:#1c1b19;--chalk-dim:#5a5448;--line:#d3cabb;}
+}
+:root[data-theme="dark"]{--track:#1c1b19;--track2:#242220;--chalk:#f2ede3;--chalk-dim:#c9c2b3;--line:#3a3733;}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow" id="dynEyebrow">8 MINGGU · 5K</div>
+  <h1 id="dynH1">24:50 → 20:00</h1>
+  <p class="sub" id="dynSub">Program lari personal. Catat setiap latihan di bawah; datanya tersimpan otomatis di perangkat ini.</p>
+</header>
+<div class="wrap">
+  <details id="settingsBox">
+    <summary>⚙️ Ubah target &amp; profil</summary>
+    <div class="log-grid" style="margin-top:.8rem;">
+      <div><label>PR jarak (km)</label><input type="number" step="0.1" id="pf-prdist"></div>
+      <div><label>PR waktu (mm:ss)</label><input type="text" id="pf-prtime" placeholder="24:50"></div>
+      <div><label>Target jarak (km)</label><input type="number" step="0.1" id="pf-goaldist"></div>
+      <div><label>Target waktu (mm:ss)</label><input type="text" id="pf-goaltime" placeholder="20:00"></div>
+      <div><label>Heart rate max</label><input type="number" id="pf-hrmax"></div>
+      <div><label>Jenis cedera</label><input type="text" id="pf-injury" placeholder="mis. IT Band Syndrome"></div>
+      <div><label>Volume dasar (km/minggu)</label><input type="number" step="1" id="pf-basevol"></div>
+      <div><label>Durasi program (minggu)</label><input type="number" step="1" min="4" max="16" id="pf-weeks"></div>
+    </div>
+    <div class="itb-row" style="margin-top:.3rem;"><span style="font-size:.78rem;color:var(--chalk-dim);">Ubah durasi/volume akan menyusun ulang seluruh rencana harian secara otomatis (pace dihitung dari PR &amp; target di atas). Rencana yang sudah kamu edit manual per hari akan direset.</span></div>
+    <button class="evalbtn" type="button" id="pf-save">Simpan &amp; susun ulang rencana</button>
+    <div class="evalmeta" id="pf-saved" style="display:none;">Tersimpan &amp; rencana disusun ulang.</div>
+  </details>
+  <div class="notice" id="dynNotice">⚠️ 8 minggu untuk turun dari 24:50 ke 20:00 (pace 4:58→4:00/km) adalah timeline agresif — realistisnya kamu mendarat di sekitar 21:30–22:30, dengan sub-20 sebagai target lanjutan. Program ini tetap disusun seaman mungkin, tapi pantau ketat sinyal cedera.</div>
+  <div class="summary" id="summary"></div>
+  <div class="weekbar" id="weekbar"></div>
+  <div class="phaselabel" id="phaselabel"></div>
+  <div id="days"></div>
+ 
+  <details>
+    <summary>Zona Heart Rate (Max HR 185)</summary>
+    <table class="hrtable">
+      <tr><th>Zona</th><th>%Max</th><th>BPM</th><th>Kegunaan</th></tr>
+      <tr><td>Z1 Easy</td><td>65–75%</td><td>120–139</td><td>Recovery, easy run</td></tr>
+      <tr><td>Z2 Aerobic</td><td>75–80%</td><td>139–148</td><td>Long run</td></tr>
+      <tr><td>Z3 Threshold</td><td>80–88%</td><td>148–163</td><td>Tempo</td></tr>
+      <tr><td>Z4 VO2max</td><td>88–95%</td><td>163–176</td><td>Interval</td></tr>
+      <tr><td>Z5 Anaerobic</td><td>95–100%</td><td>176–185</td><td>Repetition/sprint</td></tr>
+    </table>
+  </details>
+  <details>
+    <summary>Peringatan ITB — baca sebelum lari</summary>
+    <div class="plan">Nyeri tajam di sisi luar lutut → berhenti lari hari itu juga, es 15 menit, evaluasi 2–3 hari. Nyeri berulang di km yang sama tiap sesi → potong volume minggu itu 20% dan tambah strength/foam rolling. Hindari selalu lari di sisi jalan yang miring sama, dan kurangi downhill curam. Strength (glute medius/hip abductor) di hari Rabu &amp; Minggu bersifat wajib, bukan opsional.</div>
+  </details>
+</div>
+<footer>Data tersimpan lokal di browser ini saja — ganti perangkat berarti mulai log baru.</footer>
+ 
+<script>
+const PROFILE_DEFAULT = {prdist:5, prtime:'24:50', goaldist:5, goaltime:'20:00', hrmax:185, injury:'IT Band Syndrome (ITB)', basevol:30, weeks:8};
+function loadProfile(){
+  try{const r=localStorage.getItem('profile');return r?Object.assign({},PROFILE_DEFAULT,JSON.parse(r)):Object.assign({},PROFILE_DEFAULT);}
+  catch(e){return Object.assign({},PROFILE_DEFAULT);}
+}
+function saveProfile(p){ try{localStorage.setItem('profile',JSON.stringify(p));}catch(e){console.error(e);} }
+function paceFromTime(mmss,km){
+  const parts=(mmss||'').split(':').map(Number);
+  if(parts.length!==2||isNaN(parts[0])||isNaN(parts[1])||!km)return '';
+  const totalSec=parts[0]*60+parts[1];
+  const perKm=totalSec/km;
+  const m=Math.floor(perKm/60), s=Math.round(perKm%60);
+  return `${m}:${s.toString().padStart(2,'0')}/km`;
+}
+function parseSec(mmss){const p=(mmss||'0:0').split(':').map(Number);return (p[0]||0)*60+(p[1]||0);}
+function fmtPace(sec){const m=Math.floor(sec/60),s=Math.round(sec%60);return `${m}:${s.toString().padStart(2,'0')}/km`;}
+function rangeStr(lo,hi){return `${fmtPace(lo)}–${fmtPace(hi)}`;}
+function computeZones(p){
+  const g=parseSec(p.goaltime)/(p.goaldist||5);
+  return {goal:g, easyLo:g+95, easyHi:g+135, longLo:g+100, longHi:g+140, tempoLo:g+55, tempoHi:g+75, intervalLo:g-10, intervalHi:g+10};
+}
+function profileString(p){
+  return `PR ${p.prdist}km: ${p.prtime} (pace ${paceFromTime(p.prtime,p.prdist)}). Pengalaman lari rutin: 1 tahun. Volume dasar: ${p.basevol}km/minggu. Heart rate max: ${p.hrmax} bpm. Riwayat cedera: ${p.injury||'tidak ada'}. Target: ${p.goaldist}km di bawah ${p.goaltime} (pace ${paceFromTime(p.goaltime,p.goaldist)}) dalam ${p.weeks} minggu.`;
+}
+function fillSettingsForm(p){
+  document.getElementById('pf-prdist').value=p.prdist;
+  document.getElementById('pf-prtime').value=p.prtime;
+  document.getElementById('pf-goaldist').value=p.goaldist;
+  document.getElementById('pf-goaltime').value=p.goaltime;
+  document.getElementById('pf-hrmax').value=p.hrmax;
+  document.getElementById('pf-injury').value=p.injury;
+  document.getElementById('pf-basevol').value=p.basevol;
+  document.getElementById('pf-weeks').value=p.weeks;
+}
+function renderHeader(){
+  const p=PROFILE_STATE;
+  document.getElementById('dynEyebrow').textContent=`${WEEKS.length} MINGGU · ${p.goaldist}K`;
+  document.getElementById('dynH1').textContent=`${p.prtime} → ${p.goaltime}`;
+  document.getElementById('dynSub').textContent=`Program lari personal — PR ${p.prtime} (${p.prdist}km), basis ${p.basevol}km/minggu, HR max ${p.hrmax}, riwayat cedera ${p.injury||'tidak ada'}. Catat setiap latihan di bawah; datanya tersimpan otomatis di perangkat ini.`;
+  document.getElementById('dynNotice').textContent=`⚠️ ${WEEKS.length} minggu dari ${p.prtime} ke ${p.goaltime} adalah timeline yang agresif jika lompatannya besar — pantau progres jujur di checkpoint dan jangan paksakan kalau ada sinyal ${p.injury||'cedera'} muncul kembali.`;
+  document.querySelectorAll('.itb-row label').forEach(l=>{l.textContent=`Ada gejala ${p.injury||'cedera'} hari ini`;});
+}
+function clearPlanOverrides(){
+  try{
+    const keys=[];
+    for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith('planov:')||k.startsWith('weektarget:')))keys.push(k);}
+    keys.forEach(k=>localStorage.removeItem(k));
+  }catch(e){console.error(e);}
+}
+let PROFILE_STATE = loadProfile();
+document.getElementById('pf-save').addEventListener('click',()=>{
+  PROFILE_STATE = {
+    prdist:parseFloat(document.getElementById('pf-prdist').value)||PROFILE_DEFAULT.prdist,
+    prtime:document.getElementById('pf-prtime').value||PROFILE_DEFAULT.prtime,
+    goaldist:parseFloat(document.getElementById('pf-goaldist').value)||PROFILE_DEFAULT.goaldist,
+    goaltime:document.getElementById('pf-goaltime').value||PROFILE_DEFAULT.goaltime,
+    hrmax:parseInt(document.getElementById('pf-hrmax').value)||PROFILE_DEFAULT.hrmax,
+    injury:document.getElementById('pf-injury').value,
+    basevol:parseFloat(document.getElementById('pf-basevol').value)||PROFILE_DEFAULT.basevol,
+    weeks:Math.max(4,Math.min(16,parseInt(document.getElementById('pf-weeks').value)||PROFILE_DEFAULT.weeks))
+  };
+  saveProfile(PROFILE_STATE);
+  clearPlanOverrides();
+  WEEKS = generateWeeks(PROFILE_STATE.weeks, PROFILE_STATE);
+  currentWeek = Math.min(currentWeek, WEEKS.length);
+  renderAll();
+  const saved=document.getElementById('pf-saved');saved.style.display='block';
+  setTimeout(()=>{saved.style.display='none';},1500);
+});
+fillSettingsForm(PROFILE_STATE);
+let sampleFn = null;
+(async()=>{ try{ sampleFn = await claude.use('sample'); }catch(e){ sampleFn=null; } })();
+ 
+const RESTOBJ = {type:'Istirahat', plan:'Istirahat total. Tidur cukup, tanpa lari.', planKm:0, rest:true};
+function easyDay(km,zones,extra){return {type:'Easy Run', plan:`Easy ${km}km @ ${rangeStr(zones.easyLo,zones.easyHi)}.`+(extra?' + '+extra:''), planKm:km};}
+function strengthEasyDay(km,zones){return easyDay(km,zones,'Strength hip/glute 15–20 menit (clamshell, monster walk, single-leg bridge).');}
+function tempoDay(mins,zones,km){return {type:'Tempo', plan:`${mins} menit continuous @ ${rangeStr(zones.tempoLo,zones.tempoHi)}`, planKm:km};}
+function longDay(km,zones,label){return {type:'Long Run', plan:label||`Long run ${km}km @ ${rangeStr(zones.longLo,zones.longHi)}`, planKm:km};}
+ 
+function buildWeekDays(phaseKey,weekVol,zones,pos,isCheckpoint){
+  const longKm=Math.max(3,Math.round(weekVol*0.30));
+  const easy1=Math.max(2,Math.round(weekVol*0.16));
+  const easy2=Math.max(2,Math.round(weekVol*0.14));
+  const intervalKm=Math.max(3,Math.round(weekVol*0.20));
+  const tempoKm=Math.max(3,Math.round(weekVol*0.16));
+  let intervalObj,tempoObj;
+  if(phaseKey==='base'){
+    const reps=6+Math.min(pos,3), dist=pos<2?400:600;
+    intervalObj={type:'Interval',plan:`${reps}x${dist}m @ ${rangeStr(zones.intervalLo,zones.intervalHi)}, recovery jog 90 detik–2 menit (+wu/cd)`,planKm:intervalKm};
+    tempoObj=tempoDay(14+pos*2,zones,tempoKm);
+  } else if(phaseKey==='threshold'){
+    const reps=4+Math.min(pos,2), dist=pos<2?1000:800;
+    intervalObj={type:'Interval',plan:`${reps}x${dist}m @ ${rangeStr(zones.intervalLo,zones.intervalHi)}, recovery jog 2–3 menit (+wu/cd)`,planKm:intervalKm};
+    tempoObj=tempoDay(18+pos*2,zones,tempoKm);
+  } else {
+    const reps=Math.max(3,5-pos), dist=pos===0?1200:(pos===1?1600:1000);
+    intervalObj={type:'Interval',plan:`${reps}x${dist}m @ goal pace ${fmtPace(zones.goal)}, recovery jog 2–3 menit (+wu/cd)`,planKm:intervalKm};
+    tempoObj=tempoDay(20,zones,tempoKm);
+  }
+  const longObj=isCheckpoint?{type:'Long Run',plan:'CHECKPOINT: Time trial 5km — lari secepat mungkin, ini penentu target akhir',planKm:5}:longDay(longKm,zones);
+  return [easyDay(easy1,zones),intervalObj,strengthEasyDay(easy2,zones),tempoObj,RESTOBJ,longObj,easyDay(easy1,zones)];
+}
+function raceWeekDays(zones,weekVol,p){
+  const s=Math.max(2,Math.round(weekVol*0.2));
+  return [
+    easyDay(s,zones,'strides ringan'),
+    {type:'Easy + Strides',plan:`15 menit easy + 3x3 menit @ goal pace ${fmtPace(zones.goal)}`,planKm:s},
+    easyDay(Math.max(2,s-1),zones,'strides ringan'),
+    {type:'Easy + Strides',plan:`15 menit easy + 3x3 menit @ goal pace ${fmtPace(zones.goal)} (ketajaman, bukan latihan berat)`,planKm:s},
+    RESTOBJ,
+    {type:'RACE DAY',plan:`Time trial / race ${p.goaldist}km. Target ${fmtPace(zones.goal)} rata, jangan start terlalu cepat di km pertama.`,planKm:p.goaldist},
+    easyDay(0,zones,'atau istirahat penuh pasca race')
+  ];
+}
+function generateWeeks(totalWeeks,p){
+  totalWeeks=Math.max(4,Math.min(16,totalWeeks||8));
+  const zones=computeZones(p);
+  const buildCount=totalWeeks-1;
+  let baseCount=Math.max(1,Math.round(buildCount*0.28));
+  let threshCount=Math.max(1,Math.round(buildCount*0.42));
+  let raceSpecCount=buildCount-baseCount-threshCount;
+  if(raceSpecCount<1){raceSpecCount=1;threshCount=Math.max(1,buildCount-baseCount-raceSpecCount);}
+  const baseEnd=baseCount, threshEnd=baseCount+threshCount;
+  const weeks=[];
+  let vol=p.basevol||30;
+  for(let idx=1;idx<=buildCount;idx++){
+    let phaseKey,label,pos;
+    if(idx<=baseEnd){phaseKey='base';label='Fase 1 · Base';pos=idx-1;}
+    else if(idx<=threshEnd){phaseKey='threshold';label='Fase 2 · Threshold';pos=idx-baseEnd-1;}
+    else {phaseKey='racespecific';label='Fase 3 · Race-Specific';pos=idx-threshEnd-1;}
+    const isCutback=(idx%4===0)&&idx!==buildCount;
+    if(idx>1) vol = isCutback? vol*1.03 : vol*1.07;
+    const weekVol=Math.round(isCutback?vol*0.76:vol);
+    if(isCutback) label+=' · Cutback';
+    const isCheckpoint=idx===buildCount;
+    weeks.push({n:idx,phase:label,target:weekVol,days:buildWeekDays(phaseKey,weekVol,zones,pos,isCheckpoint)});
+  }
+  const raceVol=Math.max(10,Math.round((p.basevol||30)*0.6));
+  weeks.push({n:totalWeeks,phase:'Race Week',target:raceVol,days:raceWeekDays(zones,raceVol,p)});
+  return weeks;
+}
+let WEEKS = generateWeeks(PROFILE_STATE.weeks,PROFILE_STATE);
+const DAYNAMES=['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+let currentWeek=1;
+ 
+function loadLog(w,d){
+  try{const r=localStorage.getItem(`runlog:${w}:${d}`);return r?JSON.parse(r):null;}catch(e){return null;}
+}
+function saveLog(w,d,data){
+  try{localStorage.setItem(`runlog:${w}:${d}`,JSON.stringify(data));}catch(e){console.error('save failed',e);}
+  renderWeekbar();renderSummary();
+}
+function getWeekTarget(w){
+  try{const r=localStorage.getItem(`weektarget:${w}`);return r!==null?parseFloat(r):WEEKS[w-1].target;}catch(e){return WEEKS[w-1].target;}
+}
+function setWeekTarget(w,val){ try{localStorage.setItem(`weektarget:${w}`,val);}catch(e){console.error(e);} }
+function loadPlanOverride(w,d){
+  try{const r=localStorage.getItem(`planov:${w}:${d}`);return r?JSON.parse(r):null;}catch(e){return null;}
+}
+function savePlanOverride(w,d,data){ try{localStorage.setItem(`planov:${w}:${d}`,JSON.stringify(data));}catch(e){console.error(e);} }
+function getDayContent(w,i,base){ const ov=loadPlanOverride(w,i); return ov?Object.assign({},base,ov):base; }
+function weekHasAnyLog(w){
+  for(let d=0;d<7;d++){const l=loadLog(w,d);if(l&&(l.km||l.notes))return true;}
+  return false;
+}
+function renderWeekbar(){
+  const bar=document.getElementById('weekbar');bar.innerHTML='';
+  WEEKS.forEach(wk=>{
+    const b=document.createElement('button');
+    b.className='wbtn'+(wk.n===currentWeek?' active':'');
+    b.textContent='W'+wk.n;
+    if(weekHasAnyLog(wk.n)){const dot=document.createElement('span');dot.className='dot';b.appendChild(dot);}
+    b.onclick=()=>{currentWeek=wk.n;renderAll();};
+    bar.appendChild(b);
+  });
+}
+function renderSummary(){
+  const wk=WEEKS[currentWeek-1];
+  const target=getWeekTarget(wk.n);
+  let logged=0;
+  for(let d=0;d<7;d++){const l=loadLog(wk.n,d);if(l&&l.km)logged+=parseFloat(l.km)||0;}
+  document.getElementById('summary').innerHTML=`
+    <div class="stat"><div class="n"><input type="number" step="1" id="targetInput" value="${target}" style="width:4.5ch;background:transparent;border:none;color:var(--fire);font-family:var(--font-num);font-size:1.9rem;padding:0;">km</div><div class="l">Target minggu ini (bisa diedit)</div></div>
+    <div class="stat"><div class="n">${logged.toFixed(1)}km</div><div class="l">Sudah dicatat</div></div>
+    <div class="stat"><div class="n">${wk.n}/${WEEKS.length}</div><div class="l">Minggu ke</div></div>`;
+  document.getElementById('phaselabel').textContent=wk.phase;
+  const ti=document.getElementById('targetInput');
+  ti.addEventListener('change',()=>{ setWeekTarget(wk.n, parseFloat(ti.value)||0); });
+}
+function renderDays(){
+  const wk=WEEKS[currentWeek-1];
+  const cont=document.getElementById('days');cont.innerHTML='';
+  wk.days.forEach((base,i)=>{
+    const day=getDayContent(wk.n,i,base);
+    const log=loadLog(wk.n,i)||{};
+    const div=document.createElement('div');
+    div.className='day'+(day.rest?' rest':'');
+    const done=log.km||log.notes||log.done;
+    div.innerHTML=`
+      <div class="day-head">
+        <div><div class="name">${DAYNAMES[i]}</div><div class="type">${escapeHtml(day.type)}</div></div>
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <button type="button" class="editplan-btn" style="background:transparent;border:none;color:var(--chalk-dim);cursor:pointer;font-size:.9rem;">✏️</button>
+          <div class="check${done?' done':''}"></div>
+        </div>
+      </div>
+      <div class="day-body">
+        <div class="planview">
+          <div class="plan">${escapeHtml(day.plan)}</div>
+        </div>
+        <div class="planedit" style="display:none;">
+          <div class="log-grid">
+            <div><label>Jenis latihan</label><input type="text" class="ov-type" value="${escapeHtml(day.type)}"></div>
+          </div>
+          <div><label>Rencana / instruksi</label><textarea class="ov-plan">${escapeHtml(day.plan)}</textarea></div>
+          <button type="button" class="evalbtn ov-save">Simpan rencana</button>
+          <button type="button" class="evalbtn ov-reset" style="border-color:var(--chalk-dim);color:var(--chalk-dim);">Kembalikan default</button>
+        </div>
+        ${day.rest?'':`
+        <div class="log-grid">
+          <div><label>Jarak (km)</label><input type="number" step="0.1" data-f="km" value="${log.km||''}"></div>
+          <div><label>Waktu (menit)</label><input type="number" step="0.1" data-f="dur" value="${log.dur||''}"></div>
+          <div><label>Avg HR</label><input type="number" data-f="hr" value="${log.hr||''}"></div>
+        </div>
+        <div class="itb-row${log.itb?' flag':''}"><input type="checkbox" data-f="itb" ${log.itb?'checked':''}><label>Ada gejala ${escapeHtml(PROFILE_STATE.injury||'cedera')} hari ini</label></div>
+        <div><label>Catatan</label><textarea data-f="notes">${log.notes||''}</textarea></div>
+        <button class="evalbtn" type="button">🤖 Evaluasi latihan ini</button>
+        <div class="evalmeta" style="display:${log.eval?'block':'none'}">Evaluasi AI</div>
+        <div class="evalbox">${log.eval?escapeHtml(log.eval):''}</div>
+        <button class="evalbtn video-btn" type="button" style="margin-top:.5rem;">🎬 Video penjelasan AI</button>
+        <div class="videopanel" style="display:none;">
+          <div class="runner-anim">🏃</div>
+          <div class="captions"></div>
+          <button class="evalbtn video-stop" type="button" style="margin-top:.4rem;border-color:var(--chalk-dim);color:var(--chalk-dim);">⏹ Stop</button>
+        </div>
+        `}
+      </div>`;
+    const head=div.querySelector('.day-head');
+    head.onclick=()=>{div.classList.toggle('open');};
+    const editBtn=div.querySelector('.editplan-btn');
+    const planView=div.querySelector('.planview');
+    const planEdit=div.querySelector('.planedit');
+    editBtn.onclick=(e)=>{
+      e.stopPropagation();
+      div.classList.add('open');
+      const editing=planEdit.style.display!=='none';
+      planEdit.style.display=editing?'none':'block';
+      planView.style.display=editing?'block':'none';
+    };
+    div.querySelector('.ov-save').onclick=(e)=>{
+      e.stopPropagation();
+      const newType=div.querySelector('.ov-type').value;
+      const newPlan=div.querySelector('.ov-plan').value;
+      savePlanOverride(wk.n,i,{type:newType,plan:newPlan});
+      renderDays();
+    };
+    div.querySelector('.ov-reset').onclick=(e)=>{
+      e.stopPropagation();
+      try{localStorage.removeItem(`planov:${wk.n}:${i}`);}catch(err){}
+      renderDays();
+    };
+    if(!day.rest){
+      div.querySelectorAll('[data-f]').forEach(inp=>{
+        inp.addEventListener('input',()=>{
+          const l=loadLog(wk.n,i)||{};
+          const f=inp.dataset.f;
+          l[f]= inp.type==='checkbox'?inp.checked:inp.value;
+          saveLog(wk.n,i,l);
+        });
+      });
+      const evalBtn=div.querySelector('.evalbtn');
+      const evalBox=div.querySelector('.evalbox');
+      const evalMeta=div.querySelector('.evalmeta');
+      evalBtn.onclick=async()=>{
+        if(!sampleFn){evalBox.textContent='Fitur evaluasi AI tidak tersedia di tampilan ini.';return;}
+        const l=loadLog(wk.n,i)||{};
+        evalBtn.disabled=true;evalBtn.textContent='Menganalisis...';evalMeta.style.display='block';evalMeta.textContent='Evaluasi AI';
+        const prompt=`Kamu pelatih lari profesional. Konteks pelari:\n${profileString(PROFILE_STATE)}\n\nRencana latihan hari ${DAYNAMES[i]} minggu ke-${wk.n} (${wk.phase}):\n"${day.plan}"\n\nHasil aktual yang dicatat pelari:\n- Jarak: ${l.km||'tidak diisi'} km\n- Waktu: ${l.dur||'tidak diisi'} menit\n- Avg HR: ${l.hr||'tidak diisi'} bpm\n- Gejala ${PROFILE_STATE.injury||'cedera'}: ${l.itb?'YA, muncul':'tidak ada'}\n- Catatan pelari: ${l.notes||'(kosong)'}\n\nEvaluasi latihan ini secara profesional dan singkat (maks 6 kalimat / poin): apakah eksekusi sesuai target rencana (pace, HR, durasi), apa yang sudah bagus, apa yang perlu diperbaiki. Jika ada gejala cedera, prioritaskan keselamatan dan sarankan langkah konkret. Tutup dengan satu saran actionable untuk sesi berikutnya. Jawab dalam Bahasa Indonesia, nada suportif tapi jujur, tanpa basa-basi pembuka.`;
+        try{
+          const {text}=await sampleFn(prompt,{modelTier:'default',onText:({text})=>{evalBox.textContent=text;}});
+          const l2=loadLog(wk.n,i)||{};l2.eval=text;saveLog(wk.n,i,l2);
+        }catch(e){
+          const msg={not_granted:'Kamu belum mengizinkan fitur AI untuk halaman ini.',rate_limited:'Terlalu banyak permintaan, coba lagi sebentar lagi.',sampling_disabled:'Fitur AI tidak tersedia untuk akun ini.'}[e.code]||'Evaluasi gagal, coba lagi.';
+          evalBox.textContent=e.text?e.text+'\n\n['+msg+']':msg;
+        }finally{
+          evalBtn.disabled=false;evalBtn.textContent='🤖 Evaluasi ulang';
+        }
+      };
+    }
+    cont.appendChild(div);
+  });
+}
+function renderAll(){renderHeader();renderWeekbar();renderSummary();renderDays();}
+renderAll();
+</script>
+</body>
+</html>
+ 
